@@ -1,4 +1,4 @@
-import NoteEditor from '@/features/editor';
+import NoteEditor from '@/features/note';
 
 export default function NoteEditorPage() {
   return <NoteEditor />;
