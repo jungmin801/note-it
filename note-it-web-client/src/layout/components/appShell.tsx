@@ -39,7 +39,9 @@ export default function AppShell({ children }: AppShellProps) {
         </aside>
 
         {/* Main Content */}
-        <main className='flex-1 p-6 bg-white overflow-y-auto'>{children}</main>
+        <main className='flex-1 p-6 bg-white overflow-y-auto' id='main'>
+          {children}
+        </main>
 
         {/* Right Sidebar */}
         <aside className='w-64 bg-gray-50 border-l p-4 hidden lg:block'>
