@@ -1,29 +1,44 @@
 import { useRef } from 'react';
 import { Group, Rect, Text } from 'react-konva';
 import { useDragBound } from '../hooks/useDragBound';
-import type { Note } from '@/constants/mock';
 import Konva from 'konva';
+import { useNoteStore, type Note } from '@/store/noteStore';
 
 export default function NoteCard(props: {
   item: Note;
+  onMouseUp: () => void;
   onDblClick: (e: Konva.KonvaEventObject<MouseEvent>) => void;
+  onClick: (e: Konva.KonvaEventObject<MouseEvent>) => void;
   isEditing: boolean;
   stage: Konva.Stage;
 }) {
-  const { item, onDblClick, isEditing, stage } = props;
+  const { item, onDblClick, onClick, onMouseUp, isEditing, stage } = props;
   const rectRef = useRef<any>(null);
   const dragBoundFunc = useDragBound(stage, rectRef.current);
+  const selectedNoteId = useNoteStore((state) => state.selectedNoteId);
   return (
     <Group
       key={item.noteId}
       id={String(item.noteId)}
       x={item.x}
       y={item.y}
+      onMouseUp={onMouseUp}
       onDblClick={onDblClick}
+      onClick={onClick}
+      onMouseDown={onClick}
       draggable
       dragBoundFunc={(pos) => dragBoundFunc(pos)}
     >
-      <Rect ref={rectRef} width={item.width} height={item.height} fill='#fcf68aff' shadowBlur={4} shadowOpacity={0.2} />
+      <Rect
+        ref={rectRef}
+        width={item.width}
+        height={item.height}
+        fill={item.color}
+        stroke={selectedNoteId === item.noteId ? 'dodgerblue' : undefined}
+        strokeWidth={selectedNoteId === item.noteId ? 2 : 0}
+        shadowBlur={4}
+        shadowOpacity={0.2}
+      />
       {!isEditing && (
         <Text
           x={0}

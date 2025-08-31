@@ -1,12 +1,16 @@
-import type { RefObject } from 'react';
+// TextOverlay.jsx
+import { forwardRef } from 'react';
 
-export default function TextOverlay(props: {
-  value: string;
-  style: React.CSSProperties;
-  onChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
-  onBlur: () => void;
-  ref: RefObject<HTMLTextAreaElement | null>;
-}) {
-  const { value, style, onChange, onBlur, ref } = props;
-  return <textarea ref={ref} rows={1} style={style} value={value} onChange={onChange} onBlur={onBlur} autoFocus maxLength={70} />;
-}
+const TextOverlay = forwardRef<
+  HTMLTextAreaElement,
+  {
+    style: React.CSSProperties;
+    onChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
+  }
+>((props, ref) => {
+  const { style, onChange } = props;
+
+  return <textarea ref={ref} rows={1} style={style} onChange={onChange} autoFocus maxLength={70} />;
+});
+
+export default TextOverlay;
