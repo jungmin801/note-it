@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { Fragment, useRef, useState } from 'react';
 import Konva from 'konva';
 import { Stage, Layer } from 'react-konva';
 import NoteCard from './components/NoteCard';
@@ -13,14 +13,18 @@ import Toolbar from './components/Toolbar';
 export default function NoteEditor() {
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
   const stageRef = useRef<any>(null);
+  const clickTimer = useRef<number | null>(null);
+  const SINGLE_CLICK_DELAY = 220;
+  const containerRef = useRef<HTMLDivElement | null>(null);
 
   const [isEditing, setIsEditing] = useState(false);
   const [textareaStyle, setTextareaStyle] = useState<React.CSSProperties>({});
   const [selectedColor, setSelectedColor] = useState<string | null>(null);
+  const [drafts, setDrafts] = useState<Record<number, string>>({});
 
   const { notes, updateNote, selectedNoteId, selectNote, deleteNote } = useNoteStore();
   const autosize = useAutosizeTextarea(textareaRef);
-  const mainSize = useResizeObserver();
+  const mainSize = useResizeObserver(containerRef);
 
   const openEditorAtNode = (targetNode: any) => {
     const nodeRect = targetNode.getClientRect();
@@ -57,42 +61,63 @@ export default function NoteEditor() {
 
   // NoteEditor.jsx에서 handleDblClick 수정
   const handleDblClick = (e: Konva.KonvaEventObject<MouseEvent>) => {
+    e.cancelBubble = true;
     const group = e.target.findAncestor('Group');
     if (!group) return;
 
     const id = Number(group.id());
+
+    // 싱글클릭 예약 취소 (가장 중요)
+    if (clickTimer.current) {
+      window.clearTimeout(clickTimer.current);
+      clickTimer.current = null;
+    }
+
     const currentNoteContent = notes.find((m) => m.noteId === id)?.content ?? '';
 
     selectNote(id);
     setIsEditing(true);
 
-    requestAnimationFrame(() => {
-      if (textareaRef.current) {
-        textareaRef.current.value = currentNoteContent;
-        autosize(textareaRef.current.value);
-      }
+    setDrafts((d) => ({ ...d, [id]: d[id] ?? currentNoteContent }));
 
+    requestAnimationFrame(() => {
       openEditorAtNode(group);
     });
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    const el = textareaRef.current;
-    if (el) {
-      el.style.height = 'auto'; // 높이 초기화
-      el.style.height = `${el.scrollHeight}px`; // scrollHeight만큼 다시 세팅
-    }
+    if (selectedNoteId == null) return;
+    const v = e.target.value;
+
+    // autosize가 ref를 요구하면 읽기만 (쓰기 금지)
     if (textareaRef.current) {
-      textareaRef.current.value = e.target.value;
+      const el = textareaRef.current;
+      el.style.height = 'auto';
+      el.style.height = `${el.scrollHeight}px`;
     }
+
+    // ★ 값은 state에만 반영
+    setDrafts((d) => ({ ...d, [selectedNoteId]: v }));
   };
 
   const handleSelectedNote = (e: Konva.KonvaEventObject<MouseEvent>) => {
+    e.cancelBubble = true;
     const group = e.target.findAncestor('Group');
     if (!group) return;
 
     const id = Number(group.id());
-    selectNote(id);
+
+    // 이전 예약 취소
+    if (clickTimer.current) {
+      window.clearTimeout(clickTimer.current);
+      clickTimer.current = null;
+    }
+
+    // 싱글클릭 확정될 때만 실행
+    clickTimer.current = window.setTimeout(() => {
+      selectNote(id);
+      clickTimer.current = null;
+    }, SINGLE_CLICK_DELAY);
   };
 
   const onDeleteNote = () => {
@@ -103,17 +128,14 @@ export default function NoteEditor() {
     }
   };
 
-  const onMouseUp = () => {
-    selectNote(null);
-  };
-
   const handleStageClick = (e: Konva.KonvaEventObject<MouseEvent>) => {
-    if (selectedNoteId && textareaRef.current) {
-      updateNote(selectedNoteId, { content: textareaRef.current.value });
-      textareaRef.current.value = '';
+    if (selectedNoteId) {
+      updateNote(selectedNoteId, { content: drafts[selectedNoteId] });
     }
+
     selectNote(null);
     setIsEditing(false);
+    setDrafts({});
   };
 
   const onChangeColor = (color: string) => {
@@ -124,28 +146,38 @@ export default function NoteEditor() {
   };
 
   return (
-    <div className='relative overflow-hidden w-full h-full'>
-      <Stage ref={stageRef} width={mainSize.width} height={mainSize.height} onMouseDown={handleStageClick}>
-        <Layer>
-          {notes.map((item) => (
-            <NoteCard
-              key={item.noteId}
-              item={item}
-              onClick={handleSelectedNote}
-              onDblClick={handleDblClick}
-              onMouseUp={onMouseUp}
-              isEditing={isEditing}
-              stage={stageRef.current}
+    <div className='relative overflow-hidden w-full h-full' ref={containerRef}>
+      {mainSize && (
+        <>
+          <Stage ref={stageRef} width={mainSize.width} height={mainSize.height} onMouseDown={handleStageClick}>
+            <Layer>
+              {notes.map((item) => (
+                <Fragment key={item.noteId}>
+                  <NoteCard
+                    item={item}
+                    onClick={handleSelectedNote}
+                    onDblClick={handleDblClick}
+                    isEditing={isEditing}
+                    stage={stageRef.current}
+                  />
+                </Fragment>
+              ))}
+            </Layer>
+          </Stage>
+          {isEditing && selectedNoteId !== null && (
+            <TextOverlay
+              key={selectedNoteId}
+              ref={textareaRef}
+              style={textareaStyle}
+              onChange={handleChange}
+              value={drafts[selectedNoteId] ?? ''}
             />
-          ))}
-        </Layer>
-      </Stage>
-      {isEditing && selectedNoteId !== null && (
-        <TextOverlay key={selectedNoteId} ref={textareaRef} style={textareaStyle} onChange={handleChange} />
+          )}
+          {!selectedNoteId && <AddNoteButton mainSize={mainSize} />}
+          {selectedNoteId && <DeleteNoteButton onClick={onDeleteNote} />}
+          {selectedNoteId && <Toolbar selectedColor={selectedColor} onChange={onChangeColor} />}
+        </>
       )}
-      {!selectedNoteId && <AddNoteButton mainSize={mainSize} />}
-      {selectedNoteId && <DeleteNoteButton onClick={onDeleteNote} />}
-      {selectedNoteId && <Toolbar selectedColor={selectedColor} onChange={onChangeColor} />}
     </div>
   );
 }

@@ -1,21 +1,12 @@
-import { useEffect, useState } from 'react';
+import { useLayoutEffect, useState } from 'react';
 
-export function useResizeObserver() {
-  const [mainSize, setMainSize] = useState({ width: 0, height: 0 });
-  useEffect(() => {
-    const mainEl = document.querySelector('#main');
-    if (!mainEl) return;
-
-    const observer = new ResizeObserver((entries) => {
-      for (let entry of entries) {
-        const { width, height } = entry.contentRect;
-        setMainSize({ width, height });
-      }
-    });
-
-    observer.observe(mainEl);
-
-    return () => observer.disconnect();
+export function useResizeObserver(containerRef: React.RefObject<HTMLDivElement | null>) {
+  const [mainSize, setMainSize] = useState<{ width: number; height: number } | null>(null);
+  useLayoutEffect(() => {
+    if (containerRef.current) {
+      const rect = containerRef.current.getBoundingClientRect();
+      setMainSize({ width: rect.width, height: rect.height });
+    }
   }, []);
 
   return mainSize;

@@ -6,13 +6,12 @@ import { useNoteStore, type Note } from '@/store/noteStore';
 
 export default function NoteCard(props: {
   item: Note;
-  onMouseUp: () => void;
   onDblClick: (e: Konva.KonvaEventObject<MouseEvent>) => void;
   onClick: (e: Konva.KonvaEventObject<MouseEvent>) => void;
   isEditing: boolean;
   stage: Konva.Stage;
 }) {
-  const { item, onDblClick, onClick, onMouseUp, isEditing, stage } = props;
+  const { item, onDblClick, onClick, isEditing, stage } = props;
   const rectRef = useRef<any>(null);
   const dragBoundFunc = useDragBound(stage, rectRef.current);
   const selectedNoteId = useNoteStore((state) => state.selectedNoteId);
@@ -22,7 +21,6 @@ export default function NoteCard(props: {
       id={String(item.noteId)}
       x={item.x}
       y={item.y}
-      onMouseUp={onMouseUp}
       onDblClick={onDblClick}
       onClick={onClick}
       onMouseDown={onClick}
@@ -39,19 +37,18 @@ export default function NoteCard(props: {
         shadowBlur={4}
         shadowOpacity={0.2}
       />
-      {!isEditing && (
-        <Text
-          x={0}
-          padding={8}
-          width={item.width}
-          height={item.height}
-          text={item.content}
-          fontSize={18}
-          align='center'
-          verticalAlign='middle'
-          listening={false}
-        />
-      )}
+      <Text
+        x={0}
+        padding={8}
+        width={item.width}
+        height={item.height}
+        text={item.content}
+        fontSize={18}
+        align='center'
+        verticalAlign='middle'
+        listening={false}
+        visible={!(isEditing && selectedNoteId === item.noteId)}
+      />
     </Group>
   );
 }
