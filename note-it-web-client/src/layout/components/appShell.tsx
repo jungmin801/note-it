@@ -6,6 +6,14 @@ interface AppShellProps {
 }
 
 export default function AppShell({ children }: AppShellProps) {
+  const getNote = async () => {
+    try {
+      const response = await fetch('http://localhost:8080/note');
+      const result = await response.json();
+      console.log(result);
+    } catch (error) {}
+  };
+
   return (
     <div className='flex flex-col min-h-screen'>
       {/* Header */}
@@ -45,8 +53,9 @@ export default function AppShell({ children }: AppShellProps) {
 
         {/* Right Sidebar */}
         <aside className='w-64 bg-gray-50 border-l p-4 hidden lg:block'>
-          <h2 className='font-medium mb-2'>Info</h2>
-          <p className='text-sm text-muted-foreground'>Right sidebar content</p>
+          <button onClick={getNote} className='w-10 h-10'>
+            요청
+          </button>
         </aside>
       </div>
     </div>

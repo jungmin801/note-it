@@ -5,7 +5,7 @@ import NoteCard from './components/NoteCard';
 import TextOverlay from './components/TextOverlay';
 import { useAutosizeTextarea } from './hooks/useAutoSizeTextarea';
 import { useResizeObserver } from './hooks/useResizeObserver';
-import AddNoteButton from './components/addNoteButton';
+import AddNoteButton from './components/AddNoteButton';
 import { useNoteStore } from '@/store/noteStore';
 import DeleteNoteButton from './components/DeleteNoteButton';
 
