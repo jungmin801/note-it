@@ -6,6 +6,6 @@ export const mock = [
     x: 200,
     y: 200,
     content: '오늘 하루도 무사히',
-    color: '#fcf68aff',
+    color: '#FFFACD',
   },
 ];

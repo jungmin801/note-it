@@ -8,6 +8,7 @@ import { useResizeObserver } from './hooks/useResizeObserver';
 import AddNoteButton from './components/AddNoteButton';
 import { useNoteStore } from '@/store/noteStore';
 import DeleteNoteButton from './components/DeleteNoteButton';
+import Toolbar from './components/Toolbar';
 
 export default function NoteEditor() {
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
@@ -15,6 +16,7 @@ export default function NoteEditor() {
 
   const [isEditing, setIsEditing] = useState(false);
   const [textareaStyle, setTextareaStyle] = useState<React.CSSProperties>({});
+  const [selectedColor, setSelectedColor] = useState<string | null>(null);
 
   const { notes, updateNote, selectedNoteId, selectNote, deleteNote } = useNoteStore();
   const autosize = useAutosizeTextarea(textareaRef);
@@ -67,7 +69,6 @@ export default function NoteEditor() {
     requestAnimationFrame(() => {
       if (textareaRef.current) {
         textareaRef.current.value = currentNoteContent;
-
         autosize(textareaRef.current.value);
       }
 
@@ -83,7 +84,6 @@ export default function NoteEditor() {
     }
     if (textareaRef.current) {
       textareaRef.current.value = e.target.value;
-      console.log(textareaRef.current.value);
     }
   };
 
@@ -110,9 +110,16 @@ export default function NoteEditor() {
   const handleStageClick = (e: Konva.KonvaEventObject<MouseEvent>) => {
     if (selectedNoteId && textareaRef.current) {
       updateNote(selectedNoteId, { content: textareaRef.current.value });
-      selectNote(null);
-      setIsEditing(false);
       textareaRef.current.value = '';
+    }
+    selectNote(null);
+    setIsEditing(false);
+  };
+
+  const onChangeColor = (color: string) => {
+    if (selectedNoteId) {
+      updateNote(selectedNoteId, { color });
+      setSelectedColor(color);
     }
   };
 
@@ -133,9 +140,12 @@ export default function NoteEditor() {
           ))}
         </Layer>
       </Stage>
-      {isEditing && selectedNoteId !== null && <TextOverlay ref={textareaRef} style={textareaStyle} onChange={handleChange} />}
+      {isEditing && selectedNoteId !== null && (
+        <TextOverlay key={selectedNoteId} ref={textareaRef} style={textareaStyle} onChange={handleChange} />
+      )}
       {!selectedNoteId && <AddNoteButton mainSize={mainSize} />}
       {selectedNoteId && <DeleteNoteButton onClick={onDeleteNote} />}
+      {selectedNoteId && <Toolbar selectedColor={selectedColor} onChange={onChangeColor} />}
     </div>
   );
 }

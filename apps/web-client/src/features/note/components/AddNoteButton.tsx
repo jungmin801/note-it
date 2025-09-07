@@ -14,7 +14,7 @@ export default function AddNoteButton(props: { mainSize: { width: number; height
     x: mainSize.width / 2,
     y: mainSize.height / 2,
     content: '',
-    color: '#fcf68aff',
+    color: '#FFFACD',
   };
 
   const onAddNote = () => {

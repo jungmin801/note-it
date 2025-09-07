@@ -50,13 +50,6 @@ export default function AppShell({ children }: AppShellProps) {
         <main className='flex-1 p-6 bg-white overflow-y-auto' id='main'>
           {children}
         </main>
-
-        {/* Right Sidebar */}
-        <aside className='w-64 bg-gray-50 border-l p-4 hidden lg:block'>
-          <button onClick={getNote} className='w-10 h-10'>
-            요청
-          </button>
-        </aside>
       </div>
     </div>
   );
