@@ -8,7 +8,7 @@ export default function AddNoteButton(props: { mainSize: { width: number; height
   const { addNote } = useNoteStore();
 
   const newNote = {
-    noteId: 2,
+    id: 2,
     width: 180,
     height: 180,
     x: mainSize.width / 2,
@@ -24,7 +24,7 @@ export default function AddNoteButton(props: { mainSize: { width: number; height
   return (
     <div className='absolute bottom-0 right-0'>
       <Tooltip>
-        <TooltipTrigger>
+        <TooltipTrigger asChild>
           <Button variant='secondary' size='icon' onClick={onAddNote}>
             <Plus />
           </Button>

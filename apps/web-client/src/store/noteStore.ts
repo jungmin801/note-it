@@ -1,14 +1,14 @@
-import { mock } from '@/constants/mock';
 import { create } from 'zustand';
 
 export type Note = {
-  noteId: number;
+  id: number;
   width: number;
   height: number;
   x: number;
   y: number;
   content: string;
   color: string;
+  created_at?: string;
 };
 
 interface NoteStore {
@@ -22,7 +22,7 @@ interface NoteStore {
 }
 
 export const useNoteStore = create<NoteStore>((set) => ({
-  notes: mock,
+  notes: [],
   selectedNoteId: null,
   setNotes: (notes: Note[]) => set({ notes }),
   addNote: (note: Note) =>
@@ -31,11 +31,11 @@ export const useNoteStore = create<NoteStore>((set) => ({
     })),
   updateNote: (noteId, patch) =>
     set((state) => ({
-      notes: state.notes.map((note) => (note.noteId === noteId ? { ...note, ...patch } : note)),
+      notes: state.notes.map((note) => (note.id === noteId ? { ...note, ...patch } : note)),
     })),
   deleteNote: (noteId) =>
     set((state) => ({
-      notes: state.notes.filter((note) => note.noteId !== noteId),
+      notes: state.notes.filter((note) => note.id !== noteId),
     })),
   selectNote: (noteId) => set({ selectedNoteId: noteId }),
 }));

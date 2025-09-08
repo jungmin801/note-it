@@ -1,4 +1,4 @@
-import { Fragment, useRef, useState } from 'react';
+import { Fragment, useEffect, useRef, useState } from 'react';
 import Konva from 'konva';
 import { Stage, Layer } from 'react-konva';
 import NoteCard from './components/NoteCard';
@@ -9,6 +9,7 @@ import AddNoteButton from './components/AddNoteButton';
 import { useNoteStore } from '@/store/noteStore';
 import DeleteNoteButton from './components/DeleteNoteButton';
 import Toolbar from './components/Toolbar';
+import CustomFetch from '@/lib/api';
 
 export default function NoteEditor() {
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
@@ -22,7 +23,7 @@ export default function NoteEditor() {
   const [selectedColor, setSelectedColor] = useState<string | null>(null);
   const [drafts, setDrafts] = useState<Record<number, string>>({});
 
-  const { notes, updateNote, selectedNoteId, selectNote, deleteNote } = useNoteStore();
+  const { notes, updateNote, selectedNoteId, selectNote, deleteNote, setNotes } = useNoteStore();
   const autosize = useAutosizeTextarea(textareaRef);
   const mainSize = useResizeObserver(containerRef);
 
@@ -73,7 +74,7 @@ export default function NoteEditor() {
       clickTimer.current = null;
     }
 
-    const currentNoteContent = notes.find((m) => m.noteId === id)?.content ?? '';
+    const currentNoteContent = notes.find((m) => m.id === id)?.content ?? '';
 
     selectNote(id);
     setIsEditing(true);
@@ -145,6 +146,15 @@ export default function NoteEditor() {
     }
   };
 
+  useEffect(() => {
+    const getNotes = async () => {
+      const notes = await CustomFetch({ url: '/notes', options: { method: 'GET' } });
+      setNotes(notes);
+    };
+
+    getNotes();
+  }, []);
+
   return (
     <div className='relative overflow-hidden w-full h-full' ref={containerRef}>
       {mainSize && (
@@ -152,7 +162,7 @@ export default function NoteEditor() {
           <Stage ref={stageRef} width={mainSize.width} height={mainSize.height} onMouseDown={handleStageClick}>
             <Layer>
               {notes.map((item) => (
-                <Fragment key={item.noteId}>
+                <Fragment key={item.id}>
                   <NoteCard
                     item={item}
                     onClick={handleSelectedNote}
