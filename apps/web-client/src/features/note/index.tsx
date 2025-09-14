@@ -7,9 +7,9 @@ import { useAutosizeTextarea } from './hooks/useAutoSizeTextarea';
 import { useResizeObserver } from './hooks/useResizeObserver';
 import AddNoteButton from './components/AddNoteButton';
 import { useNoteStore } from '@/store/noteStore';
+import CustomFetch from '@/lib/api';
 import DeleteNoteButton from './components/DeleteNoteButton';
 import Toolbar from './components/Toolbar';
-import CustomFetch from '@/lib/api';
 
 export default function NoteEditor() {
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
@@ -126,6 +126,17 @@ export default function NoteEditor() {
       deleteNote(selectedNoteId);
       setIsEditing(false);
       selectNote(null);
+
+      try {
+        CustomFetch({
+          url: `/note?id=${selectedNoteId}`,
+          options: {
+            method: 'DELETE',
+          },
+        });
+      } catch (error) {
+        console.error(error);
+      }
     }
   };
 
@@ -143,6 +154,19 @@ export default function NoteEditor() {
     if (selectedNoteId) {
       updateNote(selectedNoteId, { color });
       setSelectedColor(color);
+
+      try {
+        const prev = notes.find((note) => note.id === selectedNoteId);
+        const payload = { ...prev, color };
+
+        CustomFetch({
+          url: `/note/${selectedNoteId}`,
+          options: {
+            method: 'PUT',
+            body: payload,
+          },
+        });
+      } catch (error) {}
     }
   };
 

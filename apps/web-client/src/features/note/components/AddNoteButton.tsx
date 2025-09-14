@@ -2,6 +2,7 @@ import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { useNoteStore } from '@/store/noteStore';
+import CustomFetch from '@/lib/api';
 
 export default function AddNoteButton(props: { mainSize: { width: number; height: number } }) {
   const { mainSize } = props;
@@ -17,8 +18,26 @@ export default function AddNoteButton(props: { mainSize: { width: number; height
     color: '#FFFACD',
   };
 
-  const onAddNote = () => {
+  const onAddNote = async () => {
     addNote(newNote);
+    try {
+      CustomFetch({
+        url: '/note',
+        options: {
+          method: 'POST',
+          body: {
+            width: 180,
+            height: 180,
+            x: mainSize.width / 2,
+            y: mainSize.height / 2,
+            content: '',
+            color: '#FFFACD',
+          },
+        },
+      });
+    } catch (error) {
+      console.error(error);
+    }
   };
 
   return (

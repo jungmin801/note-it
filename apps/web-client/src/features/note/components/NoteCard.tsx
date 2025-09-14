@@ -17,8 +17,8 @@ export default function NoteCard(props: {
   const selectedNoteId = useNoteStore((state) => state.selectedNoteId);
   return (
     <Group
-      key={item.noteId}
-      id={String(item.noteId)}
+      key={item.id}
+      id={String(item.id)}
       x={item.x}
       y={item.y}
       onDblClick={onDblClick}
@@ -32,8 +32,8 @@ export default function NoteCard(props: {
         width={item.width}
         height={item.height}
         fill={item.color}
-        stroke={selectedNoteId === item.noteId ? 'dodgerblue' : undefined}
-        strokeWidth={selectedNoteId === item.noteId ? 2 : 0}
+        stroke={selectedNoteId === item.id ? 'dodgerblue' : undefined}
+        strokeWidth={selectedNoteId === item.id ? 2 : 0}
         shadowBlur={4}
         shadowOpacity={0.2}
       />
@@ -47,7 +47,7 @@ export default function NoteCard(props: {
         align='center'
         verticalAlign='middle'
         listening={false}
-        visible={!(isEditing && selectedNoteId === item.noteId)}
+        visible={!(isEditing && selectedNoteId === item.id)}
       />
     </Group>
   );

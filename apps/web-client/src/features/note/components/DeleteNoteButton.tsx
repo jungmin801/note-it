@@ -8,7 +8,7 @@ export default function DeleteNoteButton(props: { onClick: () => void }) {
   return (
     <div className='absolute bottom-0 right-0'>
       <Tooltip>
-        <TooltipTrigger>
+        <TooltipTrigger asChild>
           <Button variant='secondary' size='icon' onClick={onClick}>
             <Trash />
           </Button>
